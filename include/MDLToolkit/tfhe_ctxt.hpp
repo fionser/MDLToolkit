@@ -6,17 +6,22 @@
 #include <tfhe.h>
 #include <memory>
 #include <cassert>
+#include <iostream>
+
+namespace mdl {
+class TFHEDecryptor;
+}
 
 class TFHECtxt : public mdl::Ctxt<TFHECtxt> {
 public:
     using BootKey = TFheGateBootstrappingCloudKeySet;
 
-    explicit TFHECtxt(BootKey const* bk = nullptr) :  _bk(bk) {
+    explicit TFHECtxt(BootKey const* bk) :  _bk(bk) {
     }
 
     TFHECtxt(TFHECtxt const& oth) {
         _bk = oth._bk;
-        assert(_bk);
+        assert(_bk && oth._bit);
         _bit.reset(new LweSample(_bk->params->in_out_params));
         lweCopy(_bit.get(), oth._bit.get(), _bk->params->in_out_params);
     }
@@ -38,6 +43,14 @@ public:
 
     TFHECtxt copy() const {
         return *this;
+    }
+
+    void zero() {
+        bootsCONSTANT(_bit.get(), 0, _bk);
+    }
+
+    void one() {
+        bootsCONSTANT(_bit.get(), 1, _bk);
     }
 
     TFHECtxt& XOR(TFHECtxt const& oth) {
@@ -101,6 +114,7 @@ public:
 
 protected:
     std::unique_ptr<LweSample> _bit;    
+    friend class mdl::TFHEDecryptor;
 
 private:
     const BootKey *_bk;

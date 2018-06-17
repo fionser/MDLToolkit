@@ -27,8 +27,12 @@ public:
         return derived().copy();
     }
 
-    Ctxt<T>& operator=(const Ctxt<T> &oth) {
-        derived().operator=(oth.derived());
+    Ctxt(const Ctxt<T>& oth) {
+        derived() = oth.derived();
+    }
+
+    Ctxt<T>& operator=(Ctxt<T> oth) {
+        derived().swap(oth.derived());
         return *this;
     }
 
